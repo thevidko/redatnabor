@@ -1,19 +1,32 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
-use App\Models\Task;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Models\Task;
+use App\Http\Resources\TaskResource;
+use App\Http\Resources\TaskCollection;
+use App\Services\TaskQuery;
+use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $filter = new TaskQuery();
+        $queryItems = $filter->transform($request); //[['column','operator','value']]
+
+        if (count($queryItems) == 0) {
+            return new TaskCollection(Task::all());
+        } else {
+            return new TaskCollection(Task::where($queryItems)->get());
+        }
+
     }
 
     /**
@@ -37,7 +50,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        return new TaskResource($task);
     }
 
     /**
