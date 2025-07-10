@@ -11,7 +11,7 @@ class UpdateTaskRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +21,29 @@ class UpdateTaskRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
-        ];
+        $method = $this->method();
+        if ($method === "PUT") {
+            return [
+                'categoryId' => 'required|integer|exists:categories,id',
+                'title' => 'required|string|max:255',
+                'done' => 'boolean', //TODO required?
+            ];
+        }else{
+            return [
+                'categoryId' => 'sometimes|required|integer|exists:categories,id',
+                'title' => 'sometimes|required|string|max:255',
+                'done' => 'sometimes|boolean', //TODO required?
+            ];
+        }
+
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->has('categoryId')) {
+            $this->merge([
+                'category_id' => $this->categoryId
+            ]);
+        }
     }
 }
